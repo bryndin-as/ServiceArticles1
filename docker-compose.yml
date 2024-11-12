@@ -1,0 +1,31 @@
+﻿services:
+  servicearticles:
+    image: servicearticles
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8070:8080
+      - 8071:8081
+    depends_on:
+      - postgreasarticle
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+
+  postgreasarticle:
+    image: postgres
+    container_name: postgreasarticle
+    environment:
+      - POSTGRES_PASSWORD=111QQQwww
+      - POSTGRES_USER=root
+    ports:
+      - 5432:5432
+  #    volumes:
+  #      - .:/docker-entrypoint-initdb.d
+
+  adminer:
+    image: adminer
+    restart: always
+    container_name: adminer
+    ports:
+      - 8080:8080
