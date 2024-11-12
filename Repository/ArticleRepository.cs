@@ -9,30 +9,52 @@ public class ArticleRepository : IArticleRepository
 {
     private readonly ArticleContext _articleContext;
 
-    public ArticleRepository(ArticleContext articleContext)
+    public ArticleRepository(
+        ArticleContext articleContext)
     {
         _articleContext = articleContext;
     }
     
-    public Article GetById(int id)
+    public async Task<Article> GetByIdAsync(int id, CancellationToken cancellationToken)
     {
-        return _articleContext.Articles.Find(id);
+        var result = await _articleContext.Articles.FindAsync(id, cancellationToken);
+
+        if (result is null)
+            return new Article
+            {
+                Title = "Нужно обрабатывать ошибки, ебобо",
+                Text = "Нужно обрабатывать ошибки, ебобо"
+            };
+
+        return result;
     }
 
-    public IList<Article> GetAll()
+    public async Task<IList<Article>> GetAllAsync(CancellationToken cancellationToken)
     {
-         return _articleContext.Articles.ToList();
+         return await _articleContext.Articles.ToListAsync(cancellationToken);
     }
 
-    public void Add(Article item)
+    public async Task AddAsync(ArticleDto itemDto, CancellationToken cancellationToken)
     {
-        _articleContext.Articles.Add(item);
-        _articleContext.SaveChanges();  
+        var item = new Article
+        {
+            Title = itemDto.Title,
+            Text = itemDto.Text,
+        };
+
+        await _articleContext.Articles.AddAsync(item, cancellationToken);
+        await _articleContext.SaveChangesAsync(cancellationToken);  
     }
 
-    public void AddRange(IList<Article> items)
+    public async Task AddRangeAsync(List<ArticleDto> itemDtos, CancellationToken cancellationToken)
     {
-        _articleContext.Articles.AddRange(items);
-        _articleContext.SaveChanges();
+        var items = itemDtos.Select(dto => new Article
+        {
+            Title = dto.Title,
+            Text = dto.Text
+        }).ToList();
+        
+        await _articleContext.Articles.AddRangeAsync(items, cancellationToken);
+        await _articleContext.SaveChangesAsync(cancellationToken);
     }
 }

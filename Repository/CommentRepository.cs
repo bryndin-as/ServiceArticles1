@@ -1,4 +1,6 @@
+using Microsoft.EntityFrameworkCore;
 using ServiceArticles.Context;
+using ServiceArticles.DTO;
 using ServiceArticles.IRepository;
 using ServiceArticles.Models;
 
@@ -8,30 +10,55 @@ public class CommentRepository : ICommentRepository
 {
     private readonly ArticleContext _articleContext;
 
-    public CommentRepository(ArticleContext articleContext)
+    public CommentRepository(
+        ArticleContext articleContext)
     {
         _articleContext = articleContext;
     }
     
-    public Comment GetById(int id)
+    public async Task<Comment> GetByIdAsync(int id, CancellationToken cancellationToken)
     {
-        return _articleContext.Comments.Find(id);
+        var result = await _articleContext.Comments.FindAsync(id, cancellationToken);
+
+        if (result is null)
+            return new Comment
+            {
+                Text = "Нужно обрабатывать ошибки, ебобо",
+                Score = 1,
+                ArticleId = 1
+            };
+
+        return result;
     }
 
-    public IList<Comment> GetAll()
+    public async Task<IList<Comment>> GetAllAsync(CancellationToken cancellationToken)
     {
-        return _articleContext.Comments.ToList();
+        return await _articleContext.Comments.ToListAsync(cancellationToken);
+    }
+    
+    public async Task AddAsync(CommentDto itemDto, CancellationToken cancellationToken)
+    {
+        var item = new Comment
+        {
+            Text = itemDto.Text,
+            Score = itemDto.Score,
+            ArticleId = itemDto.ArticleId
+        };
+
+        await _articleContext.Comments.AddAsync(item, cancellationToken);
+        await _articleContext.SaveChangesAsync(cancellationToken);
     }
 
-    public void Add(Comment item)
+    public async Task AddRangeAsync(List<CommentDto> itemDtos, CancellationToken cancellationToken)
     {
-        _articleContext.Comments.Add(item);
-        _articleContext.SaveChanges();
-    }
-
-    public void AddRange(IList<Comment> items)
-    {
-        _articleContext.Comments.AddRange(items);
-        _articleContext.SaveChanges();
+        var items = itemDtos.Select(dto => new Comment
+        {
+            Text = dto.Text,
+            Score = dto.Score,
+            ArticleId = dto.ArticleId
+        }).ToList();
+        
+        await _articleContext.Comments.AddRangeAsync(items, cancellationToken);
+        await _articleContext.SaveChangesAsync(cancellationToken);
     }
 }

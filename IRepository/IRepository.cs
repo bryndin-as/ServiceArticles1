@@ -1,11 +1,11 @@
 namespace ServiceArticles.IRepository;
 
-public interface IRepository<T> where T : class
+public interface IRepository<T, TDto> 
+    where T : class
+    where TDto : class 
 {
-    T GetById(int id);
-    IList<T> GetAll();
-    void Add(T item); 
-    
-    void AddRange(IList<T> items);  
-    
+    Task<T> GetByIdAsync(int id, CancellationToken cancellationToken);
+    Task<IList<T>> GetAllAsync(CancellationToken cancellationToken);
+    Task AddAsync(TDto itemDto, CancellationToken cancellationToken); 
+    Task AddRangeAsync(List<TDto> itemDtos, CancellationToken cancellationToken);  
 }

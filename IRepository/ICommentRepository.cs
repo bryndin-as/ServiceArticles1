@@ -1,8 +1,9 @@
+using ServiceArticles.DTO;
 using ServiceArticles.Models;
 
 namespace ServiceArticles.IRepository;
 
-public interface ICommentRepository : IRepository<Comment>
+public interface ICommentRepository : IRepository<Comment, CommentDto>
 {
     
 }
